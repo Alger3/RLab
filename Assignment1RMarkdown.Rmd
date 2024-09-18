@@ -1,0 +1,21 @@
+---
+title: "Untitled"
+author: "Jack"
+date: "2024-09-18"
+output: html_document
+---
+```{r include=FALSE}
+x <- seq(0,20,0.01)
+y <- c()
+for(i in x){
+  y <- append(y,sin(i))
+}
+sin_df <- data.frame(x,y)
+print(head(sin_df,3))
+
+```
+# Wave plot
+## \[sin^2(x) + cos^2(x) = 1\]
+```{r sin_df, echo=FALSE}
+plot(sin_df)
+```

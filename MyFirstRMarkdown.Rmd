@@ -1,0 +1,12 @@
+---
+title: "assignment1_4"
+author: "Jack"
+date: "2024-09-18"
+output: html_document
+---
+```{r}
+animals <- c("Snake", "Ostrich","Cat","Spider")
+num_legs <- c(0,2,4,8)
+animals_df <- data.frame(animals, num_legs)
+print(animals_df)
+```
