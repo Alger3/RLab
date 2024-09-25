@@ -7,20 +7,40 @@ output: html_document # you can change to other output format if you want
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+library(Stat2Data)
+data("Hawks")
 ```
 
 # 1. Data Wrangling
 
-
 ## 1.1 (Q1)   
 
 <!-- Include your answers for each question under a second level heading eg ## 1.1 (Q1) -->
-**** insert your solutions here *****
+```{r include=TRUE}
+hSF <- Hawks %>% filter(Species=="RT",Weight>=1000) %>% select("Wing","Weight","Tail")
+print(head(hSF,10))
+```
 
-## 1.1 (Q2)   
+## 1.1 (Q2)
+ **there are 3 variables in hSF, show it how many columns it has**
+ 
+ **There are 4 examples nrow(), dim(), length(rownames()), summary() or str()**
+ 
+ **obervations: print(nrow(hSF)) 398**
+ 
+ **dim(hSF) 398 3 dim(hSF)[1] 398 dim(hSF)[2] 3**
+ 
+ **length(rownames(hSF)) 398**
+ 
+ **summary(hSF) overview of the data, str(hSF) all the data and the number of rows**
 
 ## 1.2 (Q1)
-
+```{r include=TRUE}
+sorthSF <- hSF %>% arrange(Wing)
+print(sorthSF %>% head(10))
+```
 
 
 ....
