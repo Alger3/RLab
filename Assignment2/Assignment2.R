@@ -56,7 +56,7 @@ hawksFullNameNA <- hawksFullName %>% group_by(Species) %>% summarize(Wing=sum(is
 
 # An event is a set of possible outcomes of an experiments
 
-# A sample sample is the set of all possible outcomes of interest for a random experiment
+# A sample space is the set of all possible outcomes of interest for a random experiment
 
 
 

@@ -23,6 +23,7 @@ hSF <- Hawks %>% filter(Species=="RT",Weight>=1000) %>% select("Wing","Weight","
 print(head(hSF,10))
 ```
 
+
 ## 1.1 (Q2)
  **there are 3 variables in hSF, show it how many columns it has**
  
@@ -36,6 +37,7 @@ print(head(hSF,10))
  
  **summary(hSF) overview of the data, str(hSF) all the data and the number of rows**
 
+
 ## 1.2 (Q1)
 ```{r include=TRUE}
 sorthSF <- hSF %>% arrange(Wing)
@@ -43,11 +45,147 @@ print(sorthSF %>% head(10))
 ```
 
 
-....
+## 1.3 (Q1)
+```{r include=TRUE}
+species_code <- c("CH","RT","SS")
+species_name_full <- c("Cooper's", "Red-tailed", "Sharp-shinned")
+hawkSpeciesNameCodes <- data.frame(species_code, species_name_full)
+print(hawkSpeciesNameCodes)
+```
+
+
+## 1.3 (Q2)
+```{r include=TRUE}
+hawksFullName <- hawkSpeciesNameCodes %>% rename(Species = species_code)
+hawksFullName <- left_join(Hawks, hawksFullName) %>% select(-Species) %>% rename(Species = species_name_full)
+print(hawksFullName %>% head(5))
+```
+
+
+## 1.3 (Q3)
+```{r include=TRUE}
+print(hawksFullName %>% select(Species, Wing, Weight) %>% head(7))
+```
+
+
+## 1.4 (Q1)
+```{r include=TRUE}
+hawksWithBMI <- Hawks %>% mutate(bird_BMI = 1000*Weight/Wing^2) %>% select(Species, bird_BMI) %>% arrange(desc(bird_BMI))
+print(hawksWithBMI %>% head(8))
+```
+
+
+## 1.5 (Q1)
+```{r include=TRUE}
+hawksFullNameSum <- hawksFullName %>% group_by(Species) %>% summarize(num_rows=n(),
+                                                                      mn_wing=mean(Wing, na.rm=TRUE),
+                                                                      nd_wing=median(Wing,na.rm=TRUE),
+                                                                      t_mn_wing=mean(Wing,min(0.1),na.rm=TRUE),
+                                                                      b_wt_ratio=max(Wing/Tail, na.rm=TRUE))
+print(hawksFullNameSum)
+```
+
+
+## 1.5 (Q2)
+```{r include=TRUE}
+hawksFullNameNA <- hawksFullName %>% group_by(Species) %>% summarize(Wing=sum(is.na(Wing)),
+                                                                     Weight=sum(is.na(Weight)),
+                                                                     Culmen=sum(is.na(Culmen)),
+                                                                     Hallux=sum(is.na(Hallux)),
+                                                                     Tail=sum(is.na(Tail)),
+                                                                     StandardTail=sum(is.na(StandardTail)),
+                                                                     Tarsus=sum(is.na(Tarsus)))
+print(hawksFullNameNA)
+```
+
+
 
 # 2. Random experiments, events and sample spaces, and the set theory
 
-....
+
+## 2.1 (Q1)
+**A Random experiment is a procedure (real or imagined) which:**
+**1. has a well-defined set of possible outcomes**
+**2. could (at least in principle) be repeated arbitrary many times**
+
+**An event is a set of possible outcomes of an experiments**
+**An event is any subset of the sample space, including the empty set and the sample space itself.**
+
+**A sample space is the set of all possible outcomes of interest for a random experiment**
+
+
+## 2.1 (Q2)
+**event: {1,2}**
+
+**sample space: {(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),…,(6,6)}**
+
+**total number of different events: $2^{6\times6}=2^{36}$** 
+
+**Yes, the empty set is considered an event. It represents the impossible event**
+
+
+## 2.2 (Q1)
+**1. $A \cup B = \{1,2,3,4,6\} \quad A \cup B=\{1,2,3,4,5,6\}$ **
+
+**2. $A \cap B = \{2\} \quad A \cap B =\{\}$**
+
+**3. $A \backslash B=\{1,3\} \quad A \backslash B=\{1,2,3\}$**
+
+**4. A and B are not disjoint, A and C are disjoint**
+
+**5. Yes, B and $A \backslash B$  are disjoint**
+
+**6. two sets: $\{\{1,2,3\},\{4,5,6\}\}$ <br>   three sets:$\{\{1,2\},\{3,4\},\{5,6\}\}**
+
+
+## 2.2 (Q2)
+**1. A**
+
+**2. empty**
+
+**3. $A^c=\Omega\backslash A, B^c=\Omega\backslash B \quad because \quad A \subseteq B, then \quad B^c \subseteq A^c$**
+
+**4. $\cup_{k=1}^K A_{k}^c$**
+
+**5. $(A \cup B)^c=\Omega \backslash (A \cup B)=(\Omega \backslash A) \cap (\Omega \backslash B)=A^c \cap B^c$**
+
+**6. $\cap_{k=1}^K A_{k}^c$**
+
+
+## 2.2 (Q3)
+**$|E|=2^K$**
+
+
+## 2.2 (Q4)
+**1. empty set: $\emptyset$**
+
+**2. $S_1 \cup S_2 \cup S_3 \cup S_4 = A_1 \cup A_2 \cup A_3 \cup A_4$**
+
+**$\quad S_1 \cap S_2 = \emptyset \quad \quad S_2 \cap S_3 = \emptyset$**
+
+**$\quad S_1 \cap S_3 = \emptyset \quad \quad S_2 \cap S_4 = \emptyset$**
+
+**$\quad S_1 \cap S_4 = \emptyset \quad \quad S_3 \cap S_4 = \emptyset$**
+
+**So $S_1,S_2,S_3,S_4 \quad form \quad a\quad partition \quad of \quad A_1 \cup A_2 \cup A_3 \cup A_4$**
+
+
+## 2.2 (Q5)
+**1. $1_{A^c}(w) = 1 - 1_A(w)$**
+
+**2. $\Omega$**
+
+**3. **
+
+**Step 1: $1_{(A \cap B)^c}=1-1_{(A \cap B)}=1-1_A \cdot 1_B$**
+
+**Step 2: $1_{A^c \cup B^c}=1_{A^c}+1_{B^c}-1_{A^c} \cdot 1_{B^c}=(1-1_A)+(1-1_B)-(1-1_A)(1-1_B)=1-1_A \cdot 1_B$**
+
+**So $(A \cap B)^c = A^c \cup B^c$**
+
+
+## 2.2 (Q6)
+**the real number between 0 and 1 is infinite**
 
 # 3. Probability theory
 
