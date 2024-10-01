@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "Jack"
+date: "2024-10-01"
+output: html_document
+---
+
+# 1. Visualisation
+```{r include=FALSE}
+library(tidyverse)
+library(Stat2Data)
+data("Hawks")
+```
+
+
+## 1.1 Q1
+```{r include=TRUE}
+hawksSmall <- drop_na(select(Hawks,Age,Day,Month,Year,CaptureTime,Species,Wing,Weight,Tail))
+print(head(hawksSmall,5))
+print(dim(hawksSmall))
+```
+
+
+## 1.1 Q2
+```{r}
+hawksSmall_weight <- ggplot(data=hawksSmall, aes(x=Weight))
+hawksSmall_weight + geom_histogram(binwidth=10) + ylab("Count")
+```
+
+
+## 1.1 Q3
+```{r}
+hawksSmall_density <- ggplot(data=hawksSmall, aes(x=Tail)) + xlab("Tail Length")
+hawksSmall_density + geom_density(adjust=0.5) + ylab("Count")
+hawksSmall_density + geom_density(adjust=2) + ylab("Count")
+```
+
+**These plots have different modes. There are 3 modes in plot with adjust 0.5 and there are 2 modes in plot with adjust 2**
+
+
+## 1.1 Q4
+```{r}
+ggplot(data=hawksSmall, aes(x=Tail, color=Species)) + geom_density(adjust=2) + xlab("Tail length") + ylab("Count")
+```
+
+
+## 1.1 Q5
+```{r}
+ggplot(data=hawksSmall, aes(x=Tail, y=Species, fill=Species)) + geom_violin() + theme_bw() + xlab("Tail (mm)") +ylab("Density")
+```
+
+
+## 1.1 Q6
+```{r}
+hawksMass <- ggplot(data=hawksSmall, aes(y=Weight,x=Tail)) + xlab("Tail (mm)") + ylab("Weight (mm)")
+hawksMass + geom_point(aes(color=Species, shape=Species)) + theme_bw()
+```
+**1. aesthetics: Species -> color, Species -> shape, Tail -> x, Weight -> y,**
+
+**2. glyphs: points**
+
+**3. Shape Color**
+
+
+## 1.1 Q7
+```{r}
+hawksMass + geom_point(aes(color=Species)) + theme_bw() + facet_wrap(~Species, scales="free") +geom_smooth(method="lm",aes(color=Species))
+```
+**1. Area color Direction**
+
+**2. Proportional**
+
+
+## 1.1 Q8
+```{r}
+heaviest <- max(filter(hawksSmall)$Weight, na.rm=TRUE)
+print(heaviest)
+hawksMass + geom_point(aes(color=Species)) + theme_bw() + geom_curve(x=190,xend=196,y=1800,yend=2040,arrow=arrow(length=unit(0.5,'cm')),curvature=0.1) + geom_text(x=180,y=1790,label="heaviest hawk")
+```
+
+
+
+
+
