@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Assignment3"
 author: "Jack"
 date: "2024-10-01"
 output: html_document
@@ -77,6 +77,95 @@ heaviest <- max(filter(hawksSmall)$Weight, na.rm=TRUE)
 print(heaviest)
 hawksMass + geom_point(aes(color=Species)) + theme_bw() + geom_curve(x=190,xend=196,y=1800,yend=2040,arrow=arrow(length=unit(0.5,'cm')),curvature=0.1) + geom_text(x=180,y=1790,label="heaviest hawk")
 ```
+
+
+# 2. Finite probability spaces
+
+## 2.1 Q1
+${{22}\choose{z}} \cdot 3^z \cdot 7^{22-z}$
+
+
+## 2.1 Q2
+```{r}
+pro_red_spheres <- function(z){
+  stopifnot(is.numeric(z),z>=0)
+  A <- choose(22,z) * 3^z * 7^(22-z)
+  result <- A/(10^22)
+  return (result)
+}
+print(pro_red_spheres(10))
+```
+
+
+## 2.1 Q3
+```{r}
+num_reds <- c()
+prob <- c()
+for (x in 1:22){
+  num_reds <- append(num_reds,x)
+  prob <- append(prob,pro_red_spheres(x))
+}
+prob_by_num_reds <- data.frame(num_reds,prob)
+prob_by_num_reds %>% head(3)
+```
+
+
+## 2.1 Q4
+```{r}
+ggplot(prob_by_num_reds, aes(x=num_reds,y=prob)) + geom_line() + xlab("Number of reds") + ylab("Probability")
+```
+
+
+## 2.1 Q5
+
+```{r}
+# case 1: Setting the random seed just once
+set.seed(0)
+for(i in 1:5){
+  print(sample(100,5,replace=FALSE))
+}
+
+# case 2: Resetting the random seed every time
+set.seed(1)
+print(sample(100,5,replace=FALSE))
+set.seed(1)
+print(sample(100,5,replace=FALSE))
+set.seed(1)
+print(sample(100,5,replace=FALSE))
+
+# case 3: reproducing case 1 if we set a random seed at the beginning
+set.seed(0)
+for(i in 1:5){
+  print(sample(100,5,replace=FALSE))
+}
+# The result will be 5 samples same as in case 1, because they have the same seed
+```
+
+```{r}
+itermap <- function(.x,.f){
+  result <- list()
+  for (item in .x) {
+    result <- c(result, list(.f(item)))
+  }
+  return (result)
+}
+itermap(c(1,2,3),function(x){return (c(x,x^2))})
+
+itermap_dbl <- function(.x,.f) {
+  result <- numeric(length(.x))
+  for(i in 1:length(.x)){
+    result[i] <- .f(.x[[i]])
+  }
+  return (result)
+}
+itermap_dbl(c(1,2,3), function(x){return (x^3)})
+```
+
+```{r}
+
+```
+
+
 
 
 
