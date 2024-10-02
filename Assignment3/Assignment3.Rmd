@@ -162,10 +162,115 @@ itermap_dbl(c(1,2,3), function(x){return (x^3)})
 ```
 
 ```{r}
+trial <- sequence(1000)
+set.seed(0)
+sampling_with_replacement_simulation <- data.frame(trial) %>% mutate(sample_balls = itermap(.x=trial,function(x){sample(10,22,replace=TRUE)}))
 
+sampling_with_replacement_simulation <- sampling_with_replacement_simulation %>% mutate(num_reds = itermap_dbl(.x=trial,function(x){
+  n <- 0
+  for (i in sampling_with_replacement_simulation[[x,"sample_balls"]]){
+  if (i <= 3){n <- n+1}
+  }
+  return (n)
+  }
+  ))
+head(sampling_with_replacement_simulation,5)
 ```
 
 
+## 2.1 Q6
+```{r}
+# we extract a vector corresponding to the number of reds in each trial
+num_reds_in_simulation <- sampling_with_replacement_simulation %>% pull(num_reds)
+# add a column which gives the number of trials with a given number of reds
+prob_by_num_reds<-prob_by_num_reds %>% mutate(predicted_prob=itermap_dbl(.x=num_reds, function(.x) sum(num_reds_in_simulation==.x))/1000)
+print(prob_by_num_reds)
+```
+
+
+## 2.1 Q7
+```{r}
+prob_by_num_reds %>% rename(TheoreticalProbability=prob, EstimatedProbability=predicted_prob) %>% ggplot(aes(x=num_reds)) + theme_bw() + geom_line(aes(y=TheoreticalProbability)) + geom_line(aes(y=EstimatedProbability), linetype="dashed") + geom_point(aes(y=EstimatedProbability)) + xlab("Number of reds") + ylab("Probabilities")
+```
+
+
+# 2.2 Q1
+```{r}
+# 1. Random seed
+set.seed(0)
+
+# 2. set a number of trials
+trials <- sequence(100)
+
+# 3. generate samples
+spheres <- c(rep("Red", 50), rep("Blue", 30), rep("Green", 20))
+sampling_without_replacement_simulation <- data.frame(trials) %>% mutate(sample_balls = itermap(.x=trials,function(x){sample(spheres,10,replace=TRUE)}))
+
+# 4. Compute the number of red, green, and blue
+# Red
+sampling_without_replacement_simulation <- sampling_without_replacement_simulation %>% mutate(num_reds = itermap_dbl(.x=trials,function(x){
+  n <- 0
+  for (i in sampling_without_replacement_simulation[[x,"sample_balls"]]){
+  if (i == "Red"){n <- n+1}
+  }
+  return (n)
+  }
+  ))
+
+# Green
+sampling_without_replacement_simulation <- sampling_without_replacement_simulation %>% mutate(num_greens = itermap_dbl(.x=trials,function(x){
+  n <- 0
+  for (i in sampling_without_replacement_simulation[[x,"sample_balls"]]){
+  if (i == "Green"){n <- n+1}
+  }
+  return (n)
+  }
+  ))
+
+#Blue
+sampling_without_replacement_simulation <- sampling_without_replacement_simulation %>% mutate(num_blues = itermap_dbl(.x=trials,function(x){
+  n <- 0
+  for (i in sampling_without_replacement_simulation[[x,"sample_balls"]]){
+  if (i == "Blue"){n <- n+1}
+  }
+  return (n)
+  }
+  ))
+print(sampling_without_replacement_simulation)
+
+# 5. Compute the minimum of the three counts
+sampling_without_replacement_simulation["min_colors"] <- pmin(sampling_without_replacement_simulation["num_reds"],sampling_without_replacement_simulation["num_greens"],sampling_without_replacement_simulation["num_blues"])
+print(sampling_without_replacement_simulation)
+
+# 6. Compute  the proportion of rows for which the minimum number of the three counts is zero
+zero <- 0
+for (i in sampling_without_replacement_simulation[["min_colors"]]){
+  if (i == 0){
+    zero <- zero + 1
+  }
+}
+proportion <- zero/length(trials)
+print(proportion)
+```
+
+
+## 2.2 Q2
+```{r}
+subset <- choose(100,10)
+
+miss_red <- choose(50,10)
+miss_blue <- choose(70,10)
+miss_green <- choose(80,10)
+miss_red_blue <- choose(20,10)
+miss_red_green <- choose(30,10)
+miss_blue_green <- choose(50,10)
+
+# avoid double count
+miss_one_or_two_colors <- miss_red + miss_green + miss_blue - miss_blue_green - miss_red_green - miss_red_blue
+
+pro <- miss_one_or_two_colors / subset
+print(pro)
+```
 
 
 
