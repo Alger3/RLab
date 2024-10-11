@@ -1,0 +1,230 @@
+---
+title: "Assignment4"
+author: "Jack"
+date: "2024-10-08"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(purrr)
+```
+
+# 1. Tidy data and iteration
+
+## 1.1 Q1
+```{r}
+impute_by_mean <- function(x) {
+  mu <- mean(x,na.rm=TRUE)
+  impute_f <- function(z){
+    if(is.na(z)){
+      return (mu)
+    }else{
+      return (z)
+    }
+  }
+  return (map_dbl(x,impute_f))
+}
+# The function you provided uses map_dbl, which is from the purrr package in R. To run this function, you will need to load the purrr library
+```
+
+
+## 1.1 Q2
+```{r}
+impute_by_median <- function(x) {
+  mu <- median(x,na.rm=TRUE)
+  impute_f <- function(z){
+    if(is.na(z)){
+      return (mu)
+    }else{
+      return (z)
+    }
+  }
+  return (map_dbl(x,impute_f))
+}
+impute_by_median(c(1,2,NA,4))
+```
+
+
+## 1.1 Q3
+```{r}
+x <- seq(0,10,0.1)
+y <- map_dbl(x,~5*.x+1)
+df_xy <- data.frame(x,y)
+df_xy %>% head(5)
+```
+
+
+## 1.1 Q4
+```{r}
+df_xy %>% mutate(z = map2_dbl(x,y,~.x+.y)) %>% head(5)
+
+sometimes_missing <- function(index, value) {
+  impute_f <- function(x,y){
+    if(x %% 5 == 0){
+      return (NA)
+    }else{
+      return (y)
+    }
+  }
+  return (map2_dbl(index,value,impute_f))
+}
+sometimes_missing(14,25)
+sometimes_missing(15,25)
+
+y <- map2_dbl(row_number(df_xy),y,sometimes_missing)
+df_xy_missing <- data.frame(x,y)
+df_xy_missing %>% head(10)
+```
+
+
+## 1.1 Q5
+```{r}
+df_xy_imputed <- df_xy_missing %>% mutate(y=impute_by_median(y))
+df_xy_imputed %>% head(10)
+```
+
+
+## 1.2 Q1
+```{r}
+library(readxl)
+folder_path <- "D:/bristol/Statistical Computing and Empirical Methods/RStudioFile/RLab/Assignment4/"
+file_name <- "HockeyLeague.xlsx"
+file_path <- paste(folder_path,file_name,sep="")
+wins_data_frame <- read_excel(file_path,sheet="Wins")
+
+wins_data_frame %>% select(1:5) %>% head(3)
+
+values <- as.character(seq(1990,2020))
+wins_tidy <- wins_data_frame %>% pivot_longer(values,names_to="Year",values_to="WinsAndTotal") %>% separate(WinsAndTotal, into=c("Wins","Total"),sep="of",convert=TRUE) %>% rename(Team = "...1")
+
+wins_tidy %>% dim()
+
+wins_tidy %>% head(5)
+```
+
+
+## 1.2 Q2
+```{r}
+losses_data_frame <- read_excel(file_path,sheet="Losses")
+losses_tidy <- losses_data_frame %>% pivot_longer(values,names_to="Year",values_to="LossesAndTotal") %>% separate(LossesAndTotal, into=c("Losses","Total"),sep="of",convert=TRUE) %>% rename(Team = "...1")
+
+losses_tidy %>% head(5)
+```
+
+
+## 1.2 Q3
+```{r}
+hockey_df <- wins_tidy %>% inner_join(losses_tidy) %>% mutate(Draws = Total - Wins - Losses) %>% mutate(across(c(Wins,Losses,Draws), ~.x/Total,.names="{.col}_rt"))
+hockey_df %>% head(5)
+```
+
+
+## 1.2 Q4
+```{r}
+hockey_sum <- hockey_df %>% group_by(Team) %>% summarize(across(c("Wins_rt","Losses_rt","Draws_rt"),list(md=median,mn=mean),.names="{substring(.col,1,1)}_{.fn}")) %>% arrange(desc(W_md))
+hockey_sum %>% head(8)
+```
+
+
+## 1.3 Q1
+```{r}
+num_red_balls<-3 
+num_blue_balls<-7 
+total_draws<-22 
+prob_red_spheres<-function(z){ 
+  total_balls<-num_red_balls+num_blue_balls 
+  log_prob<-log(choose(total_draws,z))+ 
+    z*log(num_red_balls/total_balls)+(total_draws-
+z)*log(num_blue_balls/total_balls) 
+  return(exp(log_prob)) 
+} 
+
+num_trials <- 1000
+set.seed(0)
+
+num_reds_in_simulation <- data.frame(trial=1:num_trials) %>% mutate(sample_balls = map(.x=trial,function(x){sample(10,22,replace=TRUE)})) %>% mutate(num_reds=map_dbl(sample_balls,~ sum(.x<=3))) %>% pull(num_reds)
+
+prob_by_num_reds <- data.frame(num_reds=seq(22)) %>% mutate(TheoreticalProbability=prob_red_spheres(num_reds)) %>% mutate(EstimatedProbability=map_dbl(num_reds,~sum(num_reds_in_simulation==.x))/num_trials)
+
+print(prob_by_num_reds)
+
+```
+
+
+## 1.3 Q2
+```{r}
+prob_by_num_reds %>% pivot_longer(cols=c("EstimatedProbability", "TheoreticalProbability"), names_to="Type", values_to="count") %>% ggplot(aes(num_reds,count)) + geom_line(aes(linetype=Type,color=Type)) + geom_point(aes(color=Type)) + scale_linetype_manual(values=c("solid","dashed")) + theme_bw() + xlab("Number of reds") + ylab("Probabilities")
+```
+
+
+# 2. Conditional probability, Bayes rule and independence
+
+
+## 2.1 Q1
+$P(A)=0.9, \quad P(A^c)=0.1, \quad P(B|A)=0.8, \quad P(B^c|A^c)=0.75, \quad P(B|A^c)=0.25$
+
+$P(B)=P(B|A) \ cdot P(A) + P(B|A^c) \cdot P(A^c)=0.8 \times 0.9 + 0.25 \times 0.1 = 0.745$
+
+$P(A|B)= \frac{P(A) \cdot P(B|A)}{P(B)} = \frac{0.9 \times 0.8}{0.745} = 0.966$
+
+
+## 2.2 Q1
+***Because $A \subseteq B \quad and \quad \mathbb{P}(B\backslash A)=0, then \quad A=B$***
+$\mathbb{P}(A|B)=\frac{P(A \cap B)}{P(B)}=\frac{P(B)}{P(B)}=1$
+
+
+$yes, P(A|B)=\frac{P(A \cap B)}{P(B)}=\frac{P(\emptyset)}{P(B)}=0$
+
+
+$P(A|B)=\frac{P(A \cap B)}{P(B)}=\frac{P(B)}{P(B)}=1$
+
+
+$P(A|\Omega)=\frac{P(A \cap \Omega)}{P(\Omega)}=\frac{P(A)}{1}=P(A)$
+
+
+***Let's suppose B $A \cap C$ is D***
+$P(A \cap B \cap C)=P(B \cap D)=P(B|D) \cdot P(D)=P(B|A \cap C) \cdot P(A \cap C)=P(B|A \cap C) \cdot P(A|C) \cdot P(C)$
+
+
+$P(A|B \cap C)=\frac{P(A \cap B \cap C)}{P(B \cap C)}=\frac{P(B|A \cap C) \cdot P(A|C) \cdot P(C)}{P(B|C) \cdot P(C)}=\frac{P(B|A \cap C) \cdot P(A|C)}{P(B|C)}$
+
+
+## 2.2 Q2
+***Consider B as Windy, A as Cancel. Then we have P(A|B)=0.3, $P(A|B^c)=0.1$, P(B)=0.2, $P(B^c)=0.8$, and $P(A^c)=1-P(A)$***
+
+$P(A)=P(A|B) \cdot P(B)+P(A|B^c) \cdot P(B^c) = 0.3 \times 0.2 + 0.1 \times 0.8=0.14$
+
+$P(A^c)=1-0.14=0.86$
+
+
+## 2.3 Q1
+$\mathbb{P}(A \cap B)=\mathbb{P}({(1,1,0)})=\frac{1}{4}$
+
+$\mathbb{P}(A) \cdot \mathbb{P}(B)=\frac{1}{2} \times \frac{1}{2}=\frac{1}{4}$
+
+$Then, \mathbb{P}(A \cap B)=\mathbb{P}(A) \cdot \mathbb{P}(B),\mathbb{P}(A \cap C)=\mathbb{P}(A) \cdot \mathbb{P}(C),\mathbb{P}(B \cap C)=\mathbb{P}(B) \cdot \mathbb{P}(C)$
+
+
+$A \cap B \cap C = \emptyset, \mathbb{P}(A \cap B \cap C)=0,yes,independent$
+
+
+## 2.4 The Monty hall problem
+
+## 2.4 Q1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
