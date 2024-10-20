@@ -349,9 +349,76 @@ result <- result %>% mutate(Expectation=3*(1/10)+10*beta)
 result %>% ggplot(aes(x=beta)) + geom_point(aes(y=samplemean, color="samplemean")) + geom_point(aes(y=Expectation,color="Expectation")) + xlab("beta") + ylab("value")
 ```
 
+## 3.2 Exponential distribution
 
+## 3.2 Q1
+$\int_{-\infty}^{\infty}p(x)dx=1$
+$\int_{-\infty}^{\infty}p(x)dx=\int_{-\infty}^{\infty}0dx+\int_{-\infty}^{\infty}\lambda e^{-\lambda x} dx$
+$Then, \quad \int_{-\infty}^{\infty}\lambda e^{-\lambda x}dx=[-e^{-\lambda x}]_0^{\infty}=(0-(-1))=1$
 
+## 3.2 Q2
+```{r}
+my_cdf_exp <- function(x,lambda){
+  Fx <- 1-exp(-lambda*x)
+  if (Fx < 0){
+    Fx <- 0
+  }
+  return (Fx)
+}
+lambda <- 1/2
+map_dbl(.x=seq(-1,4), .f=~my_cdf_exp(x=.x,lambda=lambda))
 
+test_inputs <- seq(-1,10,0.1)
+my_cdf_output <- map_dbl(.x=test_inputs,.f=~my_cdf_exp(x=.x,lambda=lambda))
+inbuilt_cdf_output <- map_dbl(.x=test_inputs,.f=~pexp(q=.x,rate=lambda))
+all.equal(my_cdf_output,inbuilt_cdf_output)
+```
+
+## 3.2 Q3
+```{r}
+my_quantile_exp <- function(p,lambda){
+  return (-log(1-p)/lambda)
+}
+
+test_inputs <- seq(0.01,0.99,by=0.01)
+my_quantile_output <- map_dbl(.x=test_inputs,.f=~my_quantile_exp(p=.x,lambda=lambda))
+inbuilt_quantile_output <- map_dbl(.x=test_inputs,.f=~qexp(p=.x,rate=lambda))
+all.equal(my_quantile_output,inbuilt_quantile_output)
+```
+
+## 3.2 Q4
+$\mathbb{E}(X)=\int_{-\infty}^\infty xp_{\lambda}(x)dx=\int_{0}^\infty x \lambda e^{-\lambda x}dx=1/\lambda$
+
+$Var(X)=\mathbb{E}(X^2)-(\mathbb{E}(X))^2=1/\lambda^2$
+
+## 3.3 The Binomial distribution and the central limit theorem
+
+## 3.3 Q1
+$E(Z) = np, \quad Var(Z)=np(1-p)$
+
+## 3.3 Q2
+```{r}
+x <- seq(0,50)
+pmf <- dbinom(x,50,7/10)
+binom_df <- data.frame(x=x,pmf=pmf)
+binom_df %>% head(3)
+```
+
+## 3.3 Q3
+```{r}
+x <- seq(0,50,by=0.01)
+pdf <- dnorm(x,mean=50*0.7,sd=sqrt(50*0.7*(1-0.7)))
+gaussian_df <- data.frame(x=x, pdf=pdf)
+gaussian_df %>% head(3)
+```
+
+## 3.3 Q4
+```{r}
+colors <- c("Gaussian pdf"="red","Binomial pmf"="blue")
+fill <- c("Gaussian pdf"="white","Binomial pmf"="white")
+
+ggplot() + labs(x="x",y="Probability") + theme_bw() + geom_line(data=gaussian_df, aes(x,y=pdf,color="Gaussian pdf"), size=2) + geom_col(data=binom_df, aes(x=x,y=pmf,color="Binomial pmf", fill="Binomial pmf")) + scale_color_manual(name="myLegend", values=colors) + scale_fill_manual(name="myLegend",values=fill)+xlim(c(20,50))
+```
 
 
 
